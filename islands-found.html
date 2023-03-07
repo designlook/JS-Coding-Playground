@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Grid with DFS</title>
+	<link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.1.2/dist/tailwind.min.css" />
+	<style>
+		div {
+			font-family: arial;
+		}
+		.active {
+			box-shadow: inset 0 0 0 5px magenta !important;
+			background: green !important;
+			box-sizing: border-box;
+		}
+		.visited {
+			box-shadow: inset 0 0 0 5px orange;
+		}
+		.checking {
+			box-shadow: inset 0 0 0 5px limegreen;
+		}
+	</style>
+</head>
+
+<body class='m-4'>
+  <div class="inline-block">
+		<div class="grid-container grid grid-cols-5 gap-0 border-8 border-gray-700">
+		</div>
+	</div>
+	<div class="inline-block">
+		Islands found: <div id="islandCount"></div>
+	</div>
+</body>
+<script>
+  window.onload = function() {
+    const grid = [
+      ["1", "1", "0", "0", "0"],
+      ["1", "1", "0", "0", "0"],
+      ["0", "0", "1", "0", "0"],
+      ["0", "0", "0", "1", "1"]
+    ];
+    console.log(numIslands(grid));
+  };
+
+  async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function numIslands(grid) {
+    const countDiv = document.getElementById('islandCount')
+    countDiv.textContent = 0
+    // Define the dfs function
+    // dfs = depth field search
+    async function dfs(grid, i, j, delayTime) {
+      const boxes = document.querySelectorAll('.grid-box');
+      let currentBox = boxes[i * grid[0].length + j];
+      if (currentBox) currentBox.classList.add('checking');
+      // Base cases
+      if (i < 0 || i >= grid.length || j < 0 || j >= grid[0].length || grid[i][j] === '0') {
+        if (currentBox && !currentBox.classList.contains('bg-gray-700')) {
+          currentBox.classList.add('bg-blue-500');
+        }
+        await delay(500);
+        if (currentBox) currentBox.classList.remove('checking');
+        return;
+      }
+
+      // Mark the current element as visited
+      grid[i][j] = '0';
+
+      // Mark the current box as visited in the HTML
+      const visitedBox = boxes[i * grid[0].length + j];
+      visitedBox.classList.remove('bg-blue-500');
+      visitedBox.classList.add('bg-gray-700', 'text-white');
+      await delay(1000);
+      // Recursively perform DFS search on all adjacent "1"s
+      await dfs(grid, i + 1, j, 0);
+      await dfs(grid, i - 1, j, 0);
+      await dfs(grid, i, j + 1, 0);
+      await dfs(grid, i, j - 1, 0);
+      if (currentBox) currentBox.classList.remove('checking');
+    }
+
+    // Main function
+    if (!grid || grid.length === 0) {
+      return 0;
+    }
+
+    let numIslands = 0;
+
+    const container = document.querySelector('.grid-container');
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[0].length; j++) {
+        const box = document.createElement('div');
+        box.innerHTML = `<div class='self-center'>[${i},${j}]</div>`
+        box.classList.add('grid-box', 'flex', 'border', 'p-8', 'text-center');
+        if (grid[i][j] === '1') {
+          box.classList.add('bg-gray-200');
+          delay(500)
+        }
+        container.appendChild(box);
+      }
+    }
+
+    const boxes = document.querySelectorAll('.grid-box');
+
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid[0].length; j++) {
+        let currentBox = boxes[i * grid[0].length + j];
+        if (currentBox) currentBox.classList.add('active','animate-pulse')
+        if (currentBox) currentBox.classList.add('visited')
+        if (grid[i][j] === '1') {
+          await dfs(grid, i, j, 1000);
+          numIslands++;
+          countDiv.textContent = numIslands
+        } else if (currentBox && !currentBox.classList.contains('bg-gray-700')) {
+          await delay(1000);
+          currentBox.classList.add('bg-blue-500')
+        }
+        if (currentBox) currentBox.classList.remove('active', 'animate-pulse')
+      }
+    }
+    return numIslands;
+  }
+</script>
+</html>
